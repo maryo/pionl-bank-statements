@@ -4,6 +4,8 @@ namespace JakubZapletal\Component\BankStatement\Parser;
 
 use DateTimeImmutable;
 use Exception;
+use JakubZapletal\Component\BankStatement\ABO\BankAccountParser;
+use JakubZapletal\Component\BankStatement\ABO\BankAccountParserInterface;
 use JakubZapletal\Component\BankStatement\Statement\Statement;
 use JakubZapletal\Component\BankStatement\Statement\Transaction\AdditionalInformation;
 use JakubZapletal\Component\BankStatement\Statement\Transaction\Transaction;
@@ -72,6 +74,16 @@ class ABOParser extends Parser
         '00949' => 'TRY',
         '00840' => 'USD',
     ];
+
+    private BankAccountParser $bankAccountParser;
+
+    public function __construct(
+        ?BankAccountParserInterface $bankAccountParser = null
+    )
+    {
+        $this->bankAccountParser = $bankAccountParser ?? new BankAccountParser();
+    }
+
 
     /**
      * @param string $filePath
@@ -206,8 +218,8 @@ class ABOParser extends Parser
     protected function parseStatementLine($line)
     {
         # Account number
-        $accountNumber = substr($line, 3, 6) . '-' . substr($line, 9, 6) . '/' . substr($line, 15, 4);
-        $this->statement->setAccountNumber($accountNumber);
+
+        $this->statement->setAccountNumber($this->bankAccountParser->parse($line));
 
         # Date last balance
         $date = substr($line, 39, 6);

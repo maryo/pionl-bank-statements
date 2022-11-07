@@ -105,7 +105,7 @@ class ABOParserTest extends TestCase
 
         # Statement
         $this->assertSame($statement, $parser->getStatement());
-        $this->assertEquals('123456-123456/7890', $statement->getAccountNumber());
+        $this->assertEquals('123456-1234567890/0000', $statement->getAccountNumber());
         $this->assertEquals(new \DateTimeImmutable('2014-01-01 12:00:00'), $statement->getDateLastBalance());
         $this->assertSame(1000.00, $statement->getLastBalance());
         $this->assertSame(800.00, $statement->getBalance());

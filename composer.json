@@ -5,6 +5,9 @@
     "autoload": {
         "psr-4": { "JakubZapletal\\Component\\BankStatement\\": ""}
     },
+    "scripts": {
+        "test": "vendor/phpunit/phpunit/phpunit"
+    },
     "require": {
         "php": "^8.0",
         "symfony/dom-crawler": "^5.4",
