@@ -18,6 +18,7 @@ information about transactions.
  * GE Money Bank (CZ): `JakubZapletal\Component\BankStatement\Parser\ABOParser`
  * Komerční banka (CZ), *alias KM format*: `JakubZapletal\Component\BankStatement\Parser\ABOParser`
  * Raiffeisenbank (CZ): `JakubZapletal\Component\BankStatement\Parser\ABOParser`
+ * CREDITAS (CZ): `JakubZapletal\Component\BankStatement\Parser\ABOParser`
 * XML
  * ČSOB (CZ) [[doc](doc/xml/csob_cz.md)]: `JakubZapletal\Component\BankStatement\Parser\XML\CSOBCZParser`
 * CSV

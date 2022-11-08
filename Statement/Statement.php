@@ -16,7 +16,7 @@ class Statement implements StatementInterface, \Countable, \IteratorAggregate
     protected $accountNumber;
 
     /**
-     * @var array{prefix: ?string, number: ?string, bankCode: ?string}
+     * @var array{prefix: ?string, number: string, bankCode: string}
      */
     protected array $parsedAccountNumber;
 
@@ -174,8 +174,7 @@ class Statement implements StatementInterface, \Countable, \IteratorAggregate
 
         $this->parsedAccountNumber = [
             'prefix'   => null,
-            'number'   => null,
-            'bankCode' => null
+            'bankCode' => '0000'
         ];
 
         $splitBankCode = explode('/', $accountNumber);
@@ -213,7 +212,7 @@ class Statement implements StatementInterface, \Countable, \IteratorAggregate
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getAccountNumberPrefix()
     {

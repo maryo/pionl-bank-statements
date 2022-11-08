@@ -24,8 +24,7 @@ class ABOParserTest extends TestCase
             ->expects($this->once())
             ->method('parseFileObject')
             ->with($this->equalTo($fileObject))
-            ->will($this->returnArgument(0))
-        ;
+            ->will($this->returnArgument(0));
 
         $this->assertSame(
             $fileObject->getRealPath(),
@@ -49,8 +48,7 @@ class ABOParserTest extends TestCase
             ->expects($this->once())
             ->method('parseFileObject')
             ->with($this->isInstanceOf(\SplFileObject::class))
-            ->will($this->returnValue($content))
-        ;
+            ->will($this->returnValue($content));
 
         $this->assertEquals(
             $content,
@@ -210,5 +208,72 @@ class ABOParserTest extends TestCase
         $transactions = $statement->getIterator();
         $transaction = $transactions->current();
         $this->assertEquals('CZK', $transaction->getCurrency());
+    }
+
+    public function testCreditas(): void
+    {
+        $lines = [
+            '0740000000105559337Banka Creditas, a.s.01102200000000306479+00000000310551+000000003000000000000003040720006311022',
+            '0750000000105559337000000010555957210000007183070000003000001000000000000225000000000000000061022SSSSSSSS SSSSSS     00203061022',
+            '0750000000105559337000000000000000010000013352860000003040722000000000000000000000000000000011122Banka CREDITAS      00203311022',
+            '078Kapitalizace term. vkladu 105559417'
+        ];
+
+        $statement = $this->parse($lines);
+
+        $this->assertSame(3105.51, $statement->getBalance());
+        $this->assertSame(3064.79, $statement->getLastBalance());
+        $this->assertCount(2, $statement->getTransactions());
+        $this->assertSame('105559337', $statement->getAccountNumberNumber());
+        $this->assertSame(null, $statement->getAccountNumberPrefix());
+        $this->assertSame('105559337/2250', $statement->getAccountNumber());
+        $this->assertSame('2250', $statement->getAccountNumberBankCode());
+
+        $transaction = $statement->getTransactions()[0];
+        $this->assertSame('000000-0105559572/2250', $transaction->getCounterAccountNumber());
+        $this->assertSame('1000000718307', $transaction->getReceiptId());
+        $this->assertSame(3000.0, $transaction->getDebit());
+        $this->assertSame(null, $transaction->getCredit());
+        $this->assertSame('', $transaction->getVariableSymbol());
+        $this->assertSame('', $transaction->getConstantSymbol());
+        $this->assertSame('', $transaction->getSpecificSymbol());
+        $this->assertSame('SSSSSSSS SSSSSS', $transaction->getNote());
+        $this->assertSame('2022-10-06 12:00:00', $transaction->getDateCreated()->format('Y-m-d H:i:s'));
+        $this->assertSame(null, $transaction->getCurrency());
+        $this->assertSame(null, $transaction->getAdditionalInformation());
+        $this->assertSame(null, $transaction->getMessageStart());
+        $this->assertSame(null, $transaction->getMessageEnd());
+
+        $transaction = $statement->getTransactions()[1];
+        $this->assertSame('000000-0000000000/0000', $transaction->getCounterAccountNumber());
+        $this->assertSame('1000001335286', $transaction->getReceiptId());
+        $this->assertSame(null, $transaction->getDebit());
+        $this->assertSame(3040.72, $transaction->getCredit());
+        $this->assertSame('', $transaction->getVariableSymbol());
+        $this->assertSame('', $transaction->getConstantSymbol());
+        $this->assertSame('', $transaction->getSpecificSymbol());
+        $this->assertSame('Banka CREDITAS', $transaction->getNote());
+        $this->assertSame('2022-10-31 12:00:00', $transaction->getDateCreated()->format('Y-m-d H:i:s'));
+        $this->assertSame(null, $transaction->getCurrency());
+        $this->assertSame(null, $transaction->getAdditionalInformation());
+        $this->assertSame('Kapitalizace term. vkladu 105559417', $transaction->getMessageStart());
+        $this->assertSame(null, $transaction->getMessageEnd());
+    }
+
+    protected function parse(array $lines): Statement
+    {
+        $parser = new ABOParser();
+
+        $reflectionParser = new \ReflectionClass($this->parserClassName);
+        $method = $reflectionParser->getMethod('parseFileObject');
+        $method->setAccessible(true);
+
+        # Positive statement
+        $fileObject = new \SplFileObject(tempnam(sys_get_temp_dir(), 'test_'), 'w+');
+        foreach ($lines as $line) {
+            $fileObject->fwrite($line . PHP_EOL);
+        }
+
+        return $method->invokeArgs($parser, array($fileObject));
     }
 }

@@ -15,6 +15,10 @@ class BankAccountParser implements BankAccountParserInterface
         self::KB => true,
     ];
 
+    private array $bankCodesBasedOnAccountName = [
+        'Banka Creditas, a.s.' => '2250',
+    ];
+
     /**
      * Takes header line from ABO format and constructs bank account number. Line looks like:
      * 0740000002100199001AA....00000170290722FIO and output looks like 2100199001/2010 or 115-214740207/0100 or
@@ -89,9 +93,18 @@ class BankAccountParser implements BankAccountParserInterface
 
         if ($iban === 'FIO') {
             return '2010';
-        } else if (str_starts_with($iban, 'CZ') === true) {
+        }
+
+        if (str_starts_with($iban, 'CZ') === true) {
             // Example: CZ220100 -> 0100
             return substr($iban, 4, 4);
+        }
+
+        $accountName = substr($line, 19, 20);
+
+        if (array_key_exists($accountName, $this->bankCodesBasedOnAccountName) === true) {
+            // Example: CZ220100 -> 0100
+            return $this->bankCodesBasedOnAccountName[$accountName];
         }
 
         return '0000';
