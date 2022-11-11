@@ -76,12 +76,19 @@ class ABOParser extends Parser
     ];
 
     private BankAccountParser $bankAccountParser;
+    private string $targetEncoding;
+    private string $sourceEncoding;
 
     public function __construct(
-        ?BankAccountParserInterface $bankAccountParser = null
+        ?BankAccountParserInterface $bankAccountParser = null,
+        $targetEncoding = 'UTF-8',
+        $sourceEncoding = 'Windows-1250',
+
     )
     {
         $this->bankAccountParser = $bankAccountParser ?? new BankAccountParser();
+        $this->targetEncoding = $targetEncoding;
+        $this->sourceEncoding = $sourceEncoding;
     }
 
 
@@ -147,7 +154,7 @@ class ABOParser extends Parser
                         break;
                     case self::LINE_TYPE_MESSAGE_START:
                         $messageStart = rtrim(substr($line, 3));
-                        $transaction->setMessageStart($messageStart);
+                        $transaction->setMessageStart($this->convertEncoding($messageStart));
                         break;
                     case self::LINE_TYPE_MESSAGE_END:
                         $messageEnd = rtrim(substr($line, 3));
@@ -339,7 +346,7 @@ class ABOParser extends Parser
 
         # Note
         $note = rtrim(substr($line, 97, 20));
-        $transaction->setNote($note);
+        $transaction->setNote($this->convertEncoding($note));
 
         # Currency
         if (in_array($this->statement->getAccountNumberBankCode(), self::BANKS_WITH_CURRENCY_CODE_IN_TRANSACTION)) {
@@ -382,7 +389,7 @@ class ABOParser extends Parser
 
         # Counter-party Name
         $counterPartyName = rtrim(substr($line, 35, 92));
-        $additionalInformation->setCounterPartyName($counterPartyName);
+        $additionalInformation->setCounterPartyName($this->convertEncoding($counterPartyName));
 
         return $additionalInformation;
     }
@@ -399,5 +406,20 @@ class ABOParser extends Parser
         }
 
         return self::CURRENCIES[$currencyCode];
+    }
+
+    protected function convertEncoding(string $value): string
+    {
+        if ($this->sourceEncoding === $this->targetEncoding) {
+            return $value;
+        }
+
+        $encoding = iconv($this->sourceEncoding, $this->targetEncoding, $value);
+
+        if ($encoding === false) {
+            return $value;
+        }
+
+        return $encoding;
     }
 }

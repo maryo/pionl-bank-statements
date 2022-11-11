@@ -6,6 +6,7 @@ use DateTimeImmutable;
 use JakubZapletal\Component\BankStatement\Parser\ABOParser;
 use JakubZapletal\Component\BankStatement\Statement\Statement;
 use JakubZapletal\Component\BankStatement\Statement\Transaction\Transaction;
+use LogicException;
 use PHPUnit\Framework\TestCase;
 
 class ABOParserTest extends TestCase
@@ -183,33 +184,6 @@ class ABOParserTest extends TestCase
         $this->assertEquals(null, $transaction->getCurrency());
     }
 
-    public function testParseFileObjectWithCurrency()
-    {
-        $parser = new ABOParser();
-
-        $reflectionParser = new \ReflectionClass($this->parserClassName);
-        $method = $reflectionParser->getMethod('parseFileObject');
-        $method->setAccessible(true);
-
-        # Positive statement
-        $fileObject = new \SplFileObject(tempnam(sys_get_temp_dir(), 'test_'), 'w+');
-        $fileObject->fwrite(
-            '0741234561234560300Test s.r.o.         01011400000000100000+00000000080000+00000000060000' .
-            '+00000000040000+002010214              ' . PHP_EOL
-        );
-        $fileObject->fwrite(
-            '0750000000000012345000000000015678900000000020010000000400002000000001100100000120000000013050114' .
-            'Tran 1              00203050114' . PHP_EOL
-        );
-
-        $statement = $method->invokeArgs($parser, array($fileObject));
-
-        # Transaction currency
-        $transactions = $statement->getIterator();
-        $transaction = $transactions->current();
-        $this->assertEquals('CZK', $transaction->getCurrency());
-    }
-
     public function testCreditas(): void
     {
         $lines = [
@@ -258,6 +232,63 @@ class ABOParserTest extends TestCase
         $this->assertSame(null, $transaction->getAdditionalInformation());
         $this->assertSame('Kapitalizace term. vkladu 105559417', $transaction->getMessageStart());
         $this->assertSame(null, $transaction->getMessageEnd());
+    }
+
+    public function testConvertToUTF8(): void
+    {
+        $statement = $this->parseFile('test_windows_1250.gpc');
+
+        $this->assertSame(769264.95, $statement->getBalance());
+        $this->assertSame(747782.95, $statement->getLastBalance());
+        $this->assertCount(2, $statement->getTransactions());
+        $this->assertSame('2000012001', $statement->getAccountNumberNumber());
+        $this->assertSame(null, $statement->getAccountNumberPrefix());
+        $this->assertSame('2000012001/2010', $statement->getAccountNumber());
+        $this->assertSame('2010', $statement->getAccountNumberBankCode());
+
+        $transaction = $statement->getTransactions()[0];
+        $this->assertSame('000000-0166111143/0800', $transaction->getCounterAccountNumber());
+        $this->assertSame('24225767018', $transaction->getReceiptId());
+        $this->assertSame(null, $transaction->getDebit());
+        $this->assertSame(14813.0, $transaction->getCredit());
+        $this->assertSame('64627', $transaction->getVariableSymbol());
+        $this->assertSame('', $transaction->getConstantSymbol());
+        $this->assertSame('', $transaction->getSpecificSymbol());
+        $this->assertSame('Sewerin Martin', $transaction->getNote());
+        $this->assertSame('2022-07-29 12:00:00', $transaction->getDateCreated()->format('Y-m-d H:i:s'));
+        $this->assertSame('CZK', $transaction->getCurrency());
+        $this->assertSame(null, $transaction->getAdditionalInformation());
+        $this->assertSame(null, $transaction->getMessageStart());
+        $this->assertSame(null, $transaction->getMessageEnd());
+
+        $transaction = $statement->getTransactions()[1];
+        $this->assertSame('000000-1734129003/0800', $transaction->getCounterAccountNumber());
+        $this->assertSame('24226476315', $transaction->getReceiptId());
+        $this->assertSame(null, $transaction->getDebit());
+        $this->assertSame(6669.0, $transaction->getCredit());
+        $this->assertSame('65519', $transaction->getVariableSymbol());
+        $this->assertSame('', $transaction->getConstantSymbol());
+        $this->assertSame('', $transaction->getSpecificSymbol());
+        $this->assertSame('Eclerová Pavla', $transaction->getNote());
+        $this->assertSame('2022-07-29 12:00:00', $transaction->getDateCreated()->format('Y-m-d H:i:s'));
+        $this->assertSame('CZK', $transaction->getCurrency());
+        $this->assertSame(null, $transaction->getAdditionalInformation());
+        $this->assertSame(null, $transaction->getMessageStart());
+        $this->assertSame(null, $transaction->getMessageEnd());
+    }
+
+
+    public function parseFile(string $fileName): Statement
+    {
+        $dir = __DIR__ . '/../ABO/' . $fileName;
+        $path = realpath($dir);
+
+        if ($path === false) {
+            throw new LogicException('Failed to load file at '.$dir);
+        }
+
+        $parser = new ABOParser();
+        return $parser->parseFile($path);
     }
 
     protected function parse(array $lines): Statement

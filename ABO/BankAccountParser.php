@@ -89,7 +89,7 @@ class BankAccountParser implements BankAccountParserInterface
 
     protected function getBankCode(string $line): string
     {
-        $iban = substr($line, 114, 8);
+        $iban = trim(substr($line, 114, 8));
 
         if ($iban === 'FIO') {
             return '2010';
