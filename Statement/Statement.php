@@ -5,6 +5,7 @@ namespace JakubZapletal\Component\BankStatement\Statement;
 use ArrayIterator;
 use Iterator;
 use JakubZapletal\Component\BankStatement\Statement\Transaction\TransactionInterface;
+use Traversable;
 
 class Statement implements StatementInterface, \Countable, \IteratorAggregate
 {
@@ -329,9 +330,9 @@ class Statement implements StatementInterface, \Countable, \IteratorAggregate
     }
 
     /**
-     * @return Iterator<TransactionInterface>
+     * @return ArrayIterator<TransactionInterface>
      */
-    public function getIterator(): Iterator
+    public function getIterator(): ArrayIterator
     {
         return new ArrayIterator($this->transactions);
     }
