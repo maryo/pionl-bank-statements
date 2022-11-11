@@ -29,4 +29,43 @@ class BankAccountParserTest extends TestCase
 
         $this->assertEquals($expected, $result);
     }
+
+    public function dataWithBankAccountFix(): array
+    {
+        return [
+            ...$this->data(),
+            'RB       2' => ['0740000000923789052AAAAAAA AAAA AAAAAAA31082200000000000000+00000000000000+000000000000000000000000000000225310822', '923789052/5500', ['923789052' => '5500']],
+            'RB       3' => ['0740000000923789052AAAAAAA AAAA AAAAAAA31082200000000000000+00000000000000+000000000000000000000000000000225310822', '923789052/0000', ['923789051' => '5500']],
+            'FIO      2' => ['0740000002100199001AAAAAAA AAAA AAAAAAA29072200000000000000+00000000000000+000000000000000000000000000000170290722FIO', '2100199001/1234', ['2100199001' => '1234']],
+        ];
+    }
+
+    /**
+     * @dataProvider dataWithBankAccountFix
+     */
+    public function testWithBankAccountFix(string $line, string $expected, array $map = []): void
+    {
+        $result = (new BankAccountParser(bankAccountNumberToBankCodeMap: $map))->parse($line);
+
+        $this->assertEquals($expected, $result);
+    }
+
+    public function dataDefaultCode(): array
+    {
+        return [
+
+            'FIO      1' => ['0740000002100199001AAAAAAA AAAA AAAAAAA29072200000000000000+00000000000000+000000000000000000000000000000170290722FIO', '2100199001/2010'],
+            'RB       1' => ['0740000000973789052AAAAAAA AAAA AAAAAAA31082200000000000000+00000000000000+000000000000000000000000000000225310822', '973789052/1234'],
+        ];
+    }
+
+    /**
+     * @dataProvider dataDefaultCode
+     */
+    public function testDefaultCode(string $line, string $expected): void
+    {
+        $result = (new BankAccountParser(defaultBankCode: '1234'))->parse($line);
+
+        $this->assertEquals($expected, $result);
+    }
 }

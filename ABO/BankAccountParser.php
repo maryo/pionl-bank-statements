@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace JakubZapletal\Component\BankStatement\ABO;
 
-/**
- * @internal
- */
 class BankAccountParser implements BankAccountParserInterface
 {
     const KB = '0100';
@@ -18,6 +15,27 @@ class BankAccountParser implements BankAccountParserInterface
     private array $bankCodesBasedOnAccountName = [
         'Banka Creditas, a.s.' => '2250',
     ];
+    private string $defaultBankCode;
+
+    /**
+     * @var array <string, string>
+     */
+    private array $bankAccountNumberToBankCodeMap;
+
+    /**
+     * @param string                $defaultBankCode
+     * @param array<string, string> $bankAccountNumberToBankCodeMap Allows mapping bank account to bank code (to
+     *                                                              construct correct full bank account for abo exports that does not contain bank
+     *                                                              code)
+     */
+    public function __construct(
+        string $defaultBankCode = '0000',
+        array $bankAccountNumberToBankCodeMap = []
+    ) {
+        $this->defaultBankCode = $defaultBankCode;
+        $this->bankAccountNumberToBankCodeMap = $bankAccountNumberToBankCodeMap;
+    }
+
 
     /**
      * Takes header line from ABO format and constructs bank account number. Line looks like:
@@ -40,7 +58,13 @@ class BankAccountParser implements BankAccountParserInterface
 
         // Implode will add '-' separator between prefix and number only if $prefix is not and empty string
         // (built array will not contain empty prefix due the array_filter usage).
-        return implode('-', $accountNumberParts) . '/' . $bankCode;
+        $bankAccount = implode('-', $accountNumberParts);
+
+        if (array_key_exists($bankAccount, $this->bankAccountNumberToBankCodeMap)) {
+            $bankCode = $this->bankAccountNumberToBankCodeMap[$bankAccount];
+        }
+
+        return $bankAccount . '/' . $bankCode;
     }
 
     /**
@@ -107,6 +131,6 @@ class BankAccountParser implements BankAccountParserInterface
             return $this->bankCodesBasedOnAccountName[$accountName];
         }
 
-        return '0000';
+        return $this->defaultBankCode;
     }
 }
