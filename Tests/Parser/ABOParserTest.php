@@ -120,7 +120,7 @@ class ABOParserTest extends TestCase
 
         /** @var Transaction $transaction */
         $transaction = $transactions->current();
-        $this->assertEquals('000000-0000156789/1000', $transaction->getCounterAccountNumber());
+        $this->assertEquals('156789/1000', $transaction->getCounterAccountNumber());
         $this->assertEquals(2001, $transaction->getReceiptId());
         $this->assertSame(400.00, $transaction->getCredit());
         $this->assertNull($transaction->getDebit());
@@ -204,7 +204,7 @@ class ABOParserTest extends TestCase
         $this->assertSame('2250', $statement->getAccountNumberBankCode());
 
         $transaction = $statement->getTransactions()[0];
-        $this->assertSame('000000-0105559572/2250', $transaction->getCounterAccountNumber());
+        $this->assertSame('105559572/2250', $transaction->getCounterAccountNumber());
         $this->assertSame('1000000718307', $transaction->getReceiptId());
         $this->assertSame(3000.0, $transaction->getDebit());
         $this->assertSame(null, $transaction->getCredit());
@@ -219,7 +219,7 @@ class ABOParserTest extends TestCase
         $this->assertSame(null, $transaction->getMessageEnd());
 
         $transaction = $statement->getTransactions()[1];
-        $this->assertSame('000000-0000000000/0000', $transaction->getCounterAccountNumber());
+        $this->assertSame('0000000000/0000', $transaction->getCounterAccountNumber());
         $this->assertSame('1000001335286', $transaction->getReceiptId());
         $this->assertSame(null, $transaction->getDebit());
         $this->assertSame(3040.72, $transaction->getCredit());
@@ -247,7 +247,7 @@ class ABOParserTest extends TestCase
         $this->assertSame('2010', $statement->getAccountNumberBankCode());
 
         $transaction = $statement->getTransactions()[0];
-        $this->assertSame('000000-0166111143/0800', $transaction->getCounterAccountNumber());
+        $this->assertSame('166111143/0800', $transaction->getCounterAccountNumber());
         $this->assertSame('24225767018', $transaction->getReceiptId());
         $this->assertSame(null, $transaction->getDebit());
         $this->assertSame(14813.0, $transaction->getCredit());
@@ -262,7 +262,7 @@ class ABOParserTest extends TestCase
         $this->assertSame(null, $transaction->getMessageEnd());
 
         $transaction = $statement->getTransactions()[1];
-        $this->assertSame('000000-1734129003/0800', $transaction->getCounterAccountNumber());
+        $this->assertSame('11000-1734129003/0800', $transaction->getCounterAccountNumber());
         $this->assertSame('24226476315', $transaction->getReceiptId());
         $this->assertSame(null, $transaction->getDebit());
         $this->assertSame(6669.0, $transaction->getCredit());

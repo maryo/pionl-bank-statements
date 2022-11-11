@@ -81,8 +81,8 @@ class ABOParser extends Parser
 
     public function __construct(
         ?BankAccountParserInterface $bankAccountParser = null,
-        $targetEncoding = 'UTF-8',
-        $sourceEncoding = 'Windows-1250',
+        string $targetEncoding = 'UTF-8',
+        string $sourceEncoding = 'Windows-1250',
 
     )
     {
@@ -336,7 +336,7 @@ class ABOParser extends Parser
         $transaction->setConstantSymbol($constantSymbol);
 
         # Counter account number
-        $counterAccountNumber = substr($line, 19, 6) . '-' . substr($line, 25, 10);
+        $counterAccountNumber = $this->bankAccountParser->formatBankAccountNumber(substr($line, 19, 6), substr($line, 25, 10));
         $codeOfBank = substr($line, 73, 4);
         $transaction->setCounterAccountNumber($counterAccountNumber . '/' . $codeOfBank);
 

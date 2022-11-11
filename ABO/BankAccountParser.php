@@ -46,25 +46,34 @@ class BankAccountParser implements BankAccountParserInterface
      */
     public function parse(string $line): string
     {
-        $bankCode = $this->getBankCode($line);
+        $bankCode = $this->getBankCode(line: $line);
 
-        list($prefix, $number) = $this->getPrefixAndNumber($bankCode, $line);
+        list($prefix, $number) = $this->getPrefixAndNumber(bankCode: $bankCode, line: $line);
 
-        // Remove leading zeros from prefix and number and build an array of non empty string values
-        $accountNumberParts = array_filter([
-            ltrim($prefix, '0'),
-            ltrim($number, '0')
-        ], fn(string $value) => $value !== '');
-
-        // Implode will add '-' separator between prefix and number only if $prefix is not and empty string
-        // (built array will not contain empty prefix due the array_filter usage).
-        $bankAccount = implode('-', $accountNumberParts);
+        $bankAccount = $this->formatBankAccountNumber(prefix: $prefix, number: $number);
 
         if (array_key_exists($bankAccount, $this->bankAccountNumberToBankCodeMap)) {
             $bankCode = $this->bankAccountNumberToBankCodeMap[$bankAccount];
         }
 
         return $bankAccount . '/' . $bankCode;
+    }
+
+    public function formatBankAccountNumber(string $prefix, string $number): string
+    {
+        // Remove leading zeros from prefix and number and build an array of non empty string values
+        $accountNumberParts = array_filter([
+            ltrim($prefix, '0'),
+            ltrim($number, '0')
+        ], fn(string $value) => $value !== '');
+
+        if ($accountNumberParts === []) {
+            $accountNumberParts = ['0000000000'];
+        }
+
+        // Implode will add '-' separator between prefix and number only if $prefix is not and empty string
+        // (built array will not contain empty prefix due the array_filter usage).
+        return implode('-', $accountNumberParts);
     }
 
     /**

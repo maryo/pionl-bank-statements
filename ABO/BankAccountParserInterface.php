@@ -14,4 +14,6 @@ interface BankAccountParserInterface
      * @see BankAccountParserTest
      */
     public function parse(string $line): string;
+
+    public function formatBankAccountNumber(string $prefix, string $number): string;
 }
