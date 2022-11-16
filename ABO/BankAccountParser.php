@@ -6,10 +6,8 @@ namespace JakubZapletal\Component\BankStatement\ABO;
 
 class BankAccountParser implements BankAccountParserInterface
 {
-    const KB = '0100';
-
     private array $bankCodesWithInternalFormat = [
-        self::KB => true,
+        '0100' => true,
     ];
 
     private array $bankCodesBasedOnAccountName = [
