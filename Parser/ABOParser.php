@@ -381,7 +381,7 @@ class ABOParser extends Parser
 
         # Counter-party Name
         $counterPartyName = rtrim(substr($line, 35, 92));
-        $additionalInformation->setCounterPartyName($this->convertEncoding($counterPartyName));
+        $additionalInformation->setCounterPartyName(trim($this->convertEncoding($counterPartyName)));
 
         return $additionalInformation;
     }

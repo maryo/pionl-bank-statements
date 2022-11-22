@@ -234,9 +234,9 @@ class ABOParserTest extends TestCase
         $this->assertSame(null, $transaction->getMessageEnd());
     }
 
-    public function testConvertToUTF8(): void
+    public function testFIOExport(): void
     {
-        $statement = $this->parseFile('test_windows_1250.gpc');
+        $statement = $this->parseFile('fio.gpc');
 
         $this->assertSame(769264.95, $statement->getBalance());
         $this->assertSame(747782.95, $statement->getLastBalance());
@@ -277,6 +277,48 @@ class ABOParserTest extends TestCase
         $this->assertSame(null, $transaction->getMessageEnd());
     }
 
+    public function testCSOBExport(): void
+    {
+        $statement = $this->parseFile('csob.gpc');
+
+        $this->assertSame(3423.58, $statement->getBalance());
+        $this->assertSame(3423.58, $statement->getLastBalance());
+        $this->assertCount(2, $statement->getTransactions());
+        $this->assertSame('304449456', $statement->getAccountNumberNumber());
+        $this->assertSame(null, $statement->getAccountNumberPrefix());
+        $this->assertSame('304449456/0000', $statement->getAccountNumber());
+        $this->assertSame('0000', $statement->getAccountNumberBankCode());
+
+        $transaction = $statement->getTransactions()[0];
+        $this->assertSame('14816-712950020/0300', $transaction->getCounterAccountNumber());
+        $this->assertSame('1000000000201', $transaction->getReceiptId());
+        $this->assertSame(null, $transaction->getDebit());
+        $this->assertSame(25.0, $transaction->getCredit());
+        $this->assertSame('304449456', $transaction->getVariableSymbol());
+        $this->assertSame('', $transaction->getConstantSymbol());
+        $this->assertSame('', $transaction->getSpecificSymbol());
+        $this->assertSame('Popl.za pojištění in', $transaction->getNote());
+        $this->assertSame('2022-11-15 12:00:00', $transaction->getDateCreated()->format('Y-m-d H:i:s'));
+        $this->assertSame(null, $transaction->getCurrency());
+        $this->assertSame('SPO FROM 71295002                  Příchozí úhrada', $transaction->getAdditionalInformation()->getCounterPartyName());
+        $this->assertSame('Internetová rizika na rok zdarma', $transaction->getMessageStart());
+        $this->assertSame(null, $transaction->getMessageEnd());
+
+        $transaction = $statement->getTransactions()[1];
+        $this->assertSame('14816-712950020/0300', $transaction->getCounterAccountNumber());
+        $this->assertSame('202', $transaction->getReceiptId());
+        $this->assertSame(25.0, $transaction->getDebit());
+        $this->assertSame(null, $transaction->getCredit());
+        $this->assertSame('304449456', $transaction->getVariableSymbol());
+        $this->assertSame('', $transaction->getConstantSymbol());
+        $this->assertSame('', $transaction->getSpecificSymbol());
+        $this->assertSame('Popl.za pojištění in', $transaction->getNote());
+        $this->assertSame('2022-11-15 12:00:00', $transaction->getDateCreated()->format('Y-m-d H:i:s'));
+        $this->assertSame(null, $transaction->getCurrency());
+        $this->assertSame('Trvalý příkaz k Inkasu číslo', $transaction->getAdditionalInformation()->getCounterPartyName());
+        $this->assertSame('Pojištění internetových rizik', $transaction->getMessageStart());
+        $this->assertSame(null, $transaction->getMessageEnd());
+    }
 
     public function parseFile(string $fileName): Statement
     {
