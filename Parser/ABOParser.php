@@ -6,6 +6,7 @@ use DateTimeImmutable;
 use Exception;
 use JakubZapletal\Component\BankStatement\ABO\BankAccountParser;
 use JakubZapletal\Component\BankStatement\ABO\BankAccountParserInterface;
+use JakubZapletal\Component\BankStatement\Constants\ABOBankConstants;
 use JakubZapletal\Component\BankStatement\Statement\Statement;
 use JakubZapletal\Component\BankStatement\Statement\Transaction\AdditionalInformation;
 use JakubZapletal\Component\BankStatement\Statement\Transaction\Transaction;
@@ -43,15 +44,6 @@ class ABOParser extends Parser
       2  => self::POSTING_CODE_CREDIT,
       3  => self::POSTING_CODE_DEBIT_REVERSAL,
       4  => self::POSTING_CODE_CREDIT_REVERSAL
-    ];
-
-    const BANKS_WITH_ALT_POSTING_CODE = [
-      '0300', // Česká spořitelna
-    ];
-
-    const BANKS_WITH_CURRENCY_CODE_IN_TRANSACTION = [
-      '0300', // ČSOB
-      '2010', // FIO
     ];
 
     private const CURRENCIES = [
@@ -309,7 +301,7 @@ class ABOParser extends Parser
         # Debit / Credit
         $amount = (int) ltrim(substr($line, 48, 12), '0') / 100;
         $postingCode = substr($line, 60, 1);
-        $postingCodeMap = in_array($this->statement->getAccountNumberBankCode(), self::BANKS_WITH_ALT_POSTING_CODE)
+        $postingCodeMap = in_array($this->statement->getAccountNumberBankCode(), ABOBankConstants::BANKS_WITH_ALT_POSTING_CODE)
             ? self::POSTING_CODE_MAP_ALT
             : self::POSTING_CODE_MAP;
         switch ($postingCodeMap[$postingCode]) {
@@ -349,7 +341,7 @@ class ABOParser extends Parser
         $transaction->setNote($this->convertEncoding($note));
 
         # Currency
-        if (in_array($this->statement->getAccountNumberBankCode(), self::BANKS_WITH_CURRENCY_CODE_IN_TRANSACTION)) {
+        if (in_array($this->statement->getAccountNumberBankCode(), ABOBankConstants::BANKS_WITH_CURRENCY_CODE_IN_TRANSACTION)) {
             $currencyCode = substr($line, 117, 5);
             $currency = $this->findCurrencyByCode($currencyCode);
             $transaction->setCurrency($currency);
@@ -421,5 +413,20 @@ class ABOParser extends Parser
         }
 
         return $encoding;
+    }
+
+    public function getBankAccountParser(): BankAccountParser
+    {
+        return $this->bankAccountParser;
+    }
+
+    public function getTargetEncoding(): string
+    {
+        return $this->targetEncoding;
+    }
+
+    public function getSourceEncoding(): string
+    {
+        return $this->sourceEncoding;
     }
 }

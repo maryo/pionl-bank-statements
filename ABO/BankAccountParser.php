@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace JakubZapletal\Component\BankStatement\ABO;
 
+use JakubZapletal\Component\BankStatement\Constants\ABOBankConstants;
+
 class BankAccountParser implements BankAccountParserInterface
 {
-    private array $bankCodesWithInternalFormat = [
-        '0100' => true,
-    ];
-
-    private array $bankCodesBasedOnAccountName = [
-        'Banka Creditas, a.s.' => '2250',
-    ];
     private string $defaultBankCode;
 
     /**
@@ -23,8 +18,8 @@ class BankAccountParser implements BankAccountParserInterface
     /**
      * @param string                $defaultBankCode
      * @param array<string, string> $bankAccountNumberToBankCodeMap Allows mapping bank account to bank code (to
-     *                                                              construct correct full bank account for abo exports that does not contain bank
-     *                                                              code)
+     *                                                              construct correct full bank account for abo exports
+     *                                                              that does not contain bank code)
      */
     public function __construct(
         string $defaultBankCode = '0000',
@@ -82,7 +77,7 @@ class BankAccountParser implements BankAccountParserInterface
      */
     protected function getPrefixAndNumber(string $bankCode, string $line): array
     {
-        if (array_key_exists($bankCode, $this->bankCodesWithInternalFormat) === false) {
+        if (array_key_exists($bankCode, ABOBankConstants::BANK_CODES_WITH_INTERNAL_FORMAT) === false) {
             return [
                 substr($line, 3, 6),
                 substr($line, 9, 10)
@@ -133,11 +128,24 @@ class BankAccountParser implements BankAccountParserInterface
 
         $accountName = substr($line, 19, 20);
 
-        if (array_key_exists($accountName, $this->bankCodesBasedOnAccountName) === true) {
+        if (array_key_exists($accountName, ABOBankConstants::BANK_CODES_BASED_ON_ACCOUNT_NAME) === true) {
             // Example: CZ220100 -> 0100
-            return $this->bankCodesBasedOnAccountName[$accountName];
+            return ABOBankConstants::BANK_CODES_BASED_ON_ACCOUNT_NAME[$accountName];
         }
 
+        return $this->defaultBankCode;
+    }
+
+    /**
+     * @return array <string, string>
+     */
+    public function getBankAccountNumberToBankCodeMap(): array
+    {
+        return $this->bankAccountNumberToBankCodeMap;
+    }
+
+    public function getDefaultBankCode(): string
+    {
         return $this->defaultBankCode;
     }
 }
