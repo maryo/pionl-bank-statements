@@ -6,7 +6,7 @@
         "psr-4": { "JakubZapletal\\Component\\BankStatement\\": ""}
     },
     "scripts": {
-        "test": "vendor/phpunit/phpunit/phpunit"
+        "test": "@php vendor/phpunit/phpunit/phpunit"
     },
     "require": {
         "php": "^8.0",

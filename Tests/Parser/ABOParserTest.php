@@ -320,6 +320,34 @@ class ABOParserTest extends TestCase
         $this->assertSame(null, $transaction->getMessageEnd());
     }
 
+    public function testCSExport(): void
+    {
+        $statement = $this->parseFile('cs.gpc');
+
+        $this->assertSame(56.78, $statement->getBalance());
+        $this->assertSame(12.34, $statement->getLastBalance());
+        $this->assertCount(1, $statement->getTransactions());
+        $this->assertSame('1234567890', $statement->getAccountNumberNumber());
+        $this->assertSame(null, $statement->getAccountNumberPrefix());
+        $this->assertSame('1234567890/0000', $statement->getAccountNumber());
+        $this->assertSame('0000', $statement->getAccountNumberBankCode());
+
+        $transaction = $statement->getTransactions()[0];
+        $this->assertSame('0000000000/0800', $transaction->getCounterAccountNumber());
+        $this->assertSame('', $transaction->getReceiptId());
+        $this->assertSame(0.0, $transaction->getDebit());
+        $this->assertSame(null, $transaction->getCredit());
+        $this->assertSame('', $transaction->getVariableSymbol());
+        $this->assertSame('', $transaction->getConstantSymbol());
+        $this->assertSame('', $transaction->getSpecificSymbol());
+        $this->assertSame('Cena za vedení účtu', $transaction->getNote());
+        $this->assertSame('2022-12-31 12:00:00', $transaction->getDateCreated()->format('Y-m-d H:i:s'));
+        $this->assertSame(null, $transaction->getCurrency());
+        $this->assertSame(null, $transaction->getAdditionalInformation());
+        $this->assertSame(null, $transaction->getMessageStart());
+        $this->assertSame(null, $transaction->getMessageEnd());
+    }
+
     public function parseFile(string $fileName): Statement
     {
         $dir = __DIR__ . '/../ABO/' . $fileName;
